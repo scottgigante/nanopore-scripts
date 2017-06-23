@@ -5,7 +5,7 @@
 module load anaconda3
 if [ $(pip freeze | grep -c "ont-albacore") -eq 0 ]; then
   echo "ERROR:Albacore not installed. Please install from wheel with"
-  echo "pip3 install ont_albacore-x.x.x-cp35-cp35m-manylinux1_x86_64.whl"
+  echo "pip3 install [--user] ont_albacore-x.x.x-cp35-cp35m-manylinux1_x86_64.whl"
   exit 1
 fi
 
