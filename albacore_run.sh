@@ -35,6 +35,7 @@ if [ "$#" -eq 0 ]; then
 fi
 PARENT=$1
 
+SCRIPTS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 NUM_RUNS=$(ls -1 $PARENT/$RAW | wc -l)
 mkdir -p $PARENT/$READS
 echo "albacore_run.sh: Albacore wrapper for Milton
@@ -44,5 +45,5 @@ Input: $PARENT/$RAW
 Output: $PARENT/$READS
 Config: $CONFIG
 Jobs: $NUM_RUNS"
-qsub -t 1-$NUM_RUNS -F "$PARENT $RAW $READS $CONFIG" $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/albacore.sh
+qsub -t 1-$NUM_RUNS -F "$PARENT $RAW $READS $CONFIG" $SCRIPTS_DIR/albacore.sh
 
