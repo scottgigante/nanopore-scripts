@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: ./albacore_run.sh wehi_home/grpu_mritchie_0/AGRF_Data/2017_04_17_E_COLI_PCR_MTHYLTD_LSK108/reads [out_dir] [config]
+# Usage: ./albacore_run.sh [-h] [-i INPUT_DIR] [-o OUTPUT_DIR] [-c CONFIG] /path/to/fast5
 
 module load anaconda3
 if [ $(pip freeze | grep -c "ont-albacore") -eq 0 ]; then
