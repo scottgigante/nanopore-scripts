@@ -2,7 +2,8 @@
 #PBS -l nodes=1:ppn=2,mem=30gb
 module load gmap-gsnap
 module load samtools
-./monitor_cpu.sh "gmap.avx" &
+SCRIPTS_DIR="$HOME/nanopore-scripts"
+./$SCRIPTS_DIR/monitor_cpu.sh "gmap.avx" &
 
 set -x
 FASTA_DIR=$1
