@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -l nodes=1:ppn=2,mem=8gb
 
-# Usage: qsub -t 1-$(ls -1 /path/to/nanopore/reads/raw | wc -l) -F "/path/to/nanopore/reads raw albacore r94_450bps_linear.cfg" albacore.sh 
+# Usage: ./albacore_run.sh [-h] [-i INPUT_DIR] [-o OUTPUT_DIR] [-c CONFIG] /path/to/fast5
 
 module load anaconda3
 module load parallel
