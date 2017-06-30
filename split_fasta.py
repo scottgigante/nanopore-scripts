@@ -12,14 +12,15 @@ if len(sys.argv) > 3:
     fmt = sys.argv[3]
 else:
     fmt = "fasta"
+out_fasta = os.path.join(os.getcwd(), os.path.basename(fasta))
 
 with open(fasta, 'r') as in_handle:
-    out_handle = open("{}.1.{}".format(fasta, fmt), 'w') # start from 1 so PBS likes us
+    out_handle = open("{}.1.{}".format(out_fasta, fmt), 'w') # start from 1 so PBS likes us
     i = 0
     for record in SeqIO.parse(in_handle, fmt):
         if i % n == 0 and i > 0:
             out_handle.close()
-            out_handle = open("{}.{}.{}".format(fasta, (i // n) + 1, fmt), 'w')
+            out_handle = open("{}.{}.{}".format(out_fasta, (i // n) + 1, fmt), 'w')
         SeqIO.write(record, out_handle, fmt)
         i += 1
 out_handle.close()
