@@ -14,6 +14,8 @@ Directory structure:
 [...]
 ```
 
+The basecalled reads will be output to `/path/to/fast5/OUTPUT_DIR`.
+
 ## bash.sh
 Runs any bash command o Torque. Commands should be separated by escaped semicolons.
 
