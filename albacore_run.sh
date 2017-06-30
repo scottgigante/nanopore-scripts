@@ -33,7 +33,7 @@ if [ "$#" -eq 0 ]; then
   echo "$HELP" >&2
   exit 1
 fi
-PARENT=$1
+PARENT=$(pwd)/$1
 
 SCRIPTS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 NUM_RUNS=$(ls -1 $PARENT/$RAW | wc -l)
