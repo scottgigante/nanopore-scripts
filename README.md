@@ -5,6 +5,7 @@ Various scripts and utilities for manipulation of nanopore data and general use 
 Runs albacore as an array job on Torque. Specifically for WEHI Milton, but should work on any Torque instance. 
 
 Usage: `./albacore_run.sh [-h] [-i INPUT_DIR] [-o OUTPUT_DIR] [-c CONFIG] /path/to/fast5`
+Default arguments: INPUT_DIR=raw, OUTPUT_DIR=albacore, CONFIG=r94_450bps_linear.cfg
 
 Directory structure:
 ```
