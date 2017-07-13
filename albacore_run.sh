@@ -32,10 +32,14 @@ if [ "$#" -eq 0 ]; then
   echo "ERROR:Directory argument is mandatory."
   echo "$HELP" >&2
   exit 1
+elif [ "$#" -gt 1 ]; then
+  echo "ERROR:Unrecognised argument: ${@:2}"
+  echo "$HELP" >&2
+  exit 1
 fi
 PARENT=$(pwd)/$1
 
-echo $SCRIPTS_DIR
+
 NUM_RUNS=$(ls -1 $PARENT/$RAW | wc -l)
 mkdir -p $PARENT/$READS
 echo "albacore_run.sh: Albacore wrapper for Milton
