@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Usage: ./albacore_run.sh [-h] [-i INPUT_DIR] [-o OUTPUT_DIR] [-c CONFIG] /path/to/fast5
-
+SCRIPTS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 module load anaconda3
 if [ $(pip freeze | grep -c "ont-albacore") -eq 0 ]; then
   echo "ERROR:Albacore not installed. Please install from wheel with"
@@ -35,7 +35,7 @@ if [ "$#" -eq 0 ]; then
 fi
 PARENT=$(pwd)/$1
 
-SCRIPTS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+echo $SCRIPTS_DIR
 NUM_RUNS=$(ls -1 $PARENT/$RAW | wc -l)
 mkdir -p $PARENT/$READS
 echo "albacore_run.sh: Albacore wrapper for Milton
