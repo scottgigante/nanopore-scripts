@@ -5,6 +5,7 @@
 from __future__ import print_function
 from Bio import SeqIO
 import sys
+import os
 
 fasta = sys.argv[1]
 n = int(sys.argv[2])
