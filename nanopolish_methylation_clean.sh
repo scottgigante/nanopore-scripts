@@ -1,6 +1,7 @@
 #!/bin/bash
-#PBS -q small
+#PBS -l nodes=1:ppn=2,mem=64gb
 
+module load nanopolish
 set -x
 FASTA=$1
 TMP_DIR=$2
@@ -8,7 +9,7 @@ FMT=$(echo $FASTA | sed 's/.*\.//')
 
 # pull out the header
 HEADER=$TMP_DIR/nanopolish.methylation.header.tsv
-head -n1 $TMP_DIR/$(basename $FASTA).1.$FMT > $HEADER
+head -n1 $TMP_DIR/$(basename $FASTA).1.${FMT}.methylation.tsv > $HEADER
 BINARY_HEADER=$TMP_DIR/nanopolish.methylation.header.with_binary.tsv
 sed 's/$/\tmethylated/' $HEADER > $BINARY_HEADER
 
