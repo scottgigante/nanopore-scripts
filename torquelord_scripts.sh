@@ -4,12 +4,15 @@
 # echo "source nanopore-scripts/torquelord_scripts.sh" >> ~/.bashrc
 #
 # Commands:
-# q: views all torque jobs under your username
+# q: views all torque jobs under your usernam
+# qsub: modified to send all output to a folder ~/torque_logs/
 # host: ssh into the host of a job, or list all nodes if there are more than one
 # stdout: print stdout of an ongoing job
 # stderr: print stderr of an ongoing job
 # qalter: change the priority of a queued job (must be in queue: node_waiting and not yet be building. Will only affect priority between jobs you own)
 alias q="qstat -u $USER"
+mkdir -p ~/torque_logs/
+alias qsub="qsub -o ~/torque_logs/ -e ~/torque_logs/"
 host () {
   PROC=$1
   if [ $(q -rnt1 $PROC | tail -n +6 | sed "s/.* //" | tr + "\n" | wc -l) -eq 1 ]
