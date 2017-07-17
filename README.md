@@ -51,3 +51,18 @@ Usage: `./split_fasta.py /path/to/fasta.fa 2000`
 Splits a folder with far too many files inside into subfolders of a fixed size. Will also reduce size of existing subfolders, but will not enlarge existing subfolders at present.
 
 Usage: `./split_large_folder.sh /path/to/folder 4000`
+
+## nanopolish_methylation_run.sh (and nanopolish_methylation.sh, nanopolish_methylation_clean.sh)
+Splits a fasta file into small chunks to be called with `nanopolish call-methylation`. Requires dependencies to be active, currently only on TL3 (or nanopolish_methylation_clean.sh can be rerun after array completion.) 
+
+Usage: `qsub -F "/path_to_genome.fasta /path/to/reads.fasta" nanopolish_methylation_run.sh`
+
+## nanopolish_phase_reads_run.sh (and nanopolish_phase_reads.sh, nanopolish_phase_reads_clean.sh)
+Splits a fasta file into small chunks to be called with `nanopolish phase-reads`. Requires dependencies to be active, currently only on TL3 (or nanopolish_phase_reads_clean.sh can be rerun after array completion.)
+
+Usage: `qsub -F "/path_to_genome.fasta /path/to/reads.fasta /path/to/variants.vcf" nanopolish_phase_reads_run.sh`
+
+## extract_and_align.sh (and remove_phage_reads.py)
+Extracts fasta and completes alignment using BWA MEM, optionally removing reads aligning to the calibration strand genome (provided).
+
+Usage: `qsub -F "/path/to/reads RUN_ID /path/to/genome [phage_reads_subdir]" extract_and_align.sh`
