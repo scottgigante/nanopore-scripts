@@ -47,5 +47,5 @@ find $READS_DIR -name "*.fast5" | \
 # align reads
 mkdir -p $PARENT_DIR/alignment
 BAM=$PARENT_DIR/alignment/${OUT_NAME}.sorted.bam
-bwa mem -x ont2d -t $((NPROC-1)) -R '@RG\tID:$READ_GROUP' $GENOME $FASTQ | samtools sort -@ 4 -T $PARENT_DIR/samtools.tmp -o $BAM
+bwa mem -x ont2d -t $((NPROC-1)) -R "@RG\tID:$READ_GROUP" $GENOME $FASTQ | samtools sort -@ 4 -T $PARENT_DIR/samtools.tmp -o $BAM
 samtools index $BAM
