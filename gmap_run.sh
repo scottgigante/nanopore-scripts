@@ -4,12 +4,12 @@
 # Usage: qsub -F "wehi_home/grpu_mritchie_0/AGRF_Data/2017_05_09/reads/fasta/albacore_no_phage.fasta" gmap_run.sh
 
 set -x
-FASTA=$1
+FASTA=$PBS_O_WORKDIR/$1
 FMT=$(echo $FASTA | sed 's/.*\.//')
 N=2000
 FASTA_DIR=$(dirname $FASTA)
-TMP_DIR=tmp/gmap/$FASTA_DIR
-SCRIPTS_DIR=$HOME/nanopore-scripts
+TMP_DIR=$PBS_O_HOME/tmp/gmap/$FASTA_DIR
+SCRIPTS_DIR=$PBS_O_HOME/nanopore-scripts
 mkdir -p $TMP_DIR
 cp $FASTA $TMP_DIR/gmap.$FMT
 (cmp --silent $FASTA $TMP_DIR/gmap.$FMT && echo "Copied successfully to HPC") || (echo "ERROR: Copying fasta to HPC failed" && exit 1)

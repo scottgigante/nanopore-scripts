@@ -4,13 +4,13 @@
 # Usage: qsub -F "/path/to/genome.fasta /path/to/reads.fasta" nanopolish_methylation_run.sh
 
 set -x
-GENOME=$1
-FASTA=$2
-VCF=$3
+GENOME=$PBS_O_WORKDIR/$1
+FASTA=$PBS_O_WORKDIR/$2
+VCF=$PBS_O_WORKDIR/$3
 FMT=$(echo $FASTA | sed 's/.*\.//')
 N=10000
-TMP_DIR="$HOME/tmp/$(dirname $FASTA)"
-SCRIPTS_DIR=$HOME/nanopore-scripts
+TMP_DIR="$PBS_O_HOME/tmp/$(dirname $FASTA)"
+SCRIPTS_DIR=$PBS_O_HOME/nanopore-scripts
 
 mkdir -p $TMP_DIR
 cd $TMP_DIR
