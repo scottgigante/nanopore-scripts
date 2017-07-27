@@ -22,8 +22,8 @@ SUBDIR=$(ls -1 $PARENT/$RAW | sed "${PBS_ARRAYID}q;d")
 RAW_DIR="$PARENT/$RAW/$SUBDIR"
 READS_DIR="$PARENT/$READS/$SUBDIR"
 # Set paths on HPCScratch
-TMP_RAW_DIR="tmp/$RAW_DIR"
-TMP_READS_DIR="tmp/$READS_DIR"
+TMP_RAW_DIR="$PBS_O_HOME/tmp/$RAW_DIR"
+TMP_READS_DIR="$PBS_O_HOME/tmp/$READS_DIR"
 # Make directories if they do not exist
 mkdir -p $TMP_RAW_DIR
 mkdir -p $TMP_READS_DIR
