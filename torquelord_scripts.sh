@@ -79,5 +79,5 @@ Usage: qalter [-h] [-p PRIORITY] [-t WAIT_TIME] [-n NUM_ATTEMPTS] PROC_ID"
 }; export -f qalter
 # % qalter 42330
 # Job 42330 (PBS ID 101048) set to priority -1023
-# % qalter -p 100 42330]
+# % qalter -p 100 42330
 # Job 42330 (PBS ID 101048) set to priority 100
