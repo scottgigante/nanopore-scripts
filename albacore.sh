@@ -45,7 +45,7 @@ fi
 
 echo "[$(date +'%y-%m-%d %H:%M:%S')] Basecalling fast5 into $TMP_READS_DIR..."
 # This is it! Basecall the reads
-read_fast5_basecaller.py -o fast5,fastq -i $TMP_RAW_DIR -c $CONFIG -t 1 -s $TMP_READS_DIR
+read_fast5_basecaller.py -o fast5,fastq -i $TMP_RAW_DIR -c $CONFIG -t $(($(nproc)-1)) -s $TMP_READS_DIR
 
 # Count the number of basecalled reads - even reads without basecalls should have a file associated with them
 N_CALLED=$(find $TMP_READS_DIR/workspace -mindepth 2 -name "*.fast5" | wc -l)
