@@ -50,11 +50,13 @@ read_fast5_basecaller.py -o $MODE -i $TMP_RAW_DIR -c $CONFIG -t $(($(nproc)-1)) 
 
 # Count the number of basecalled reads - even reads without basecalls should have a file associated with them
 N_CALLED=$(find $TMP_READS_DIR/workspace -mindepth 2 -name "*.fast5" | wc -l)
+N_FASTQ_CALLED=$(grep -c -e "^@" $TMP_READS_DIR/workspace/*.fastq)
 # Check that all reads were basecalled
-if [ $N_CALLED -lt $N_MOVED ]; then
+if ([[ $MODE == *"fast5"* ]] && [ $N_CALLED -lt $N_MOVED ]) || ( [[ $MODE == *"fastq"* ]] && [ $N_FASTQ_CALLED -lt $N_MOVED ]); then
   echo "[$(date +'%y-%m-%d %H:%M:%S')] ERROR:Basecalling failed."
   echo "$TMP_RAW_DIR: $N_MOVED"
-  echo "$TMP_READS_DIR: $N_CALLED"
+  echo "$TMP_READS_DIR/*.fast5: $N_CALLED"
+  echo "$TMP_READS_DIR/*.fastq: $N_FASTQ_CALLED"
 fi
 # Remove temporary raw files
 rm -rf $TMP_RAW_DIR
@@ -67,11 +69,14 @@ find $TMP_READS_DIR/workspace -mindepth 2 -name "*.fast5" | parallel -X cp {} $R
 find $TMP_READS_DIR/workspace -name "*.fastq" -exec cat {} \; > ${READS_DIR}.fastq
 # Count the number of fast5 files moved
 N_MOVED=$(find $READS_DIR -name "*.fast5" | wc -l)
+N_FASTQ_MOVED=$(grep -c -e "^@" ${READS_DIR}.fastq)
 # Check if all basecalled files were moved
-if [ $N_MOVED -lt $N_CALLED ]; then
+if [ $N_MOVED -lt $N_CALLED ] || [ $N_FASTQ_MOVED -lt $N_FASTQ_CALLED ]; then
   echo "[$(date +'%y-%m-%d %H:%M:%S')] ERROR:Copy to wehisan failed."
-  echo "$TMP_READS_DIR: $N_CALLED"
-  echo "$READS_DIR: $N_MOVED"
+  echo "$TMP_READS_DIR/*.fast5: $N_CALLED"
+  echo "$READS_DIR/*.fast5: $N_MOVED"
+  echo "$TMP_READS_DIR/*.fastq: $N_FASTQ_CALLED"
+  echo "${READS_DIR}.fastq: $N_FASTQ_MOVED"
 else
   # All good, we can remove the temporary basecalled files. If copying failed, user may want to retrieve them.
   rm -rf $TMP_READS_DIR
