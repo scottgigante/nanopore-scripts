@@ -21,23 +21,36 @@ fi
 RAW="raw"
 READS="albacore"
 CONFIG="r94_450bps_linear.cfg"
+MODE="fast5"
+FAST5=false
+FASTQ=false
 HELP="albacore_run.sh: Albacore wrapper for Milton
 Scott Gigante, 2017-06-23
-Usage: ./albacore_run.sh [-h] [-i INPUT_DIR] [-o OUTPUT_DIR] [-c CONFIG] /path/to/fast5"
+Usage: ./albacore_run.sh [-h] [-i INPUT_DIR] [-o OUTPUT_DIR] [-c CONFIG] [-5] [-q] /path/to/fast5"
 
 # Parse command line arguments. If an argument is missing, it will be left as default
-while getopts 'hi:o:c:' arg
+while getopts 'hi:o:c:5q' arg
 do
   case ${arg} in
     h) echo "$HELP"; exit 0;;
     i) RAW=${OPTARG};;
     o) READS=${OPTARG};;
     c) CONFIG=${OPTARG};;
+    5) FAST5=true
+    q) FASTQ=true
     *) echo "$HELP" >&2; exit 1 # illegal option
     esac
 done
 # Shift the beginning argument index so we only have what hasn't been parsed by getopt (eg, /path/to/fast5)
 shift $(($OPTIND - 1))
+# Set the output mode
+if $FAST5 && $FASTQ; then
+  MODE="fast5,fastq"
+elif $FASTQ; then
+  MODE="fastq"
+elif $FAST5; then
+  MODE="fast5"
+fi
 
 # Check there is exactly one argument left
 if [ "$#" -eq 0 ]; then
@@ -63,7 +76,8 @@ Scott Gigante, 2017-06-23
 Input: $PARENT/$RAW
 Output: $PARENT/$READS
 Config: $CONFIG
+Output: $MODE
 Jobs: $NUM_RUNS"
 # Run the array job
-qsub -t 1-$NUM_RUNS -F "$PARENT $RAW $READS $CONFIG" $SCRIPTS_DIR/albacore.sh
+qsub -t 1-$NUM_RUNS -F "$PARENT $RAW $READS $CONFIG $MODE" $SCRIPTS_DIR/albacore.sh
 

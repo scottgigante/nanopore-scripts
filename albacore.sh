@@ -1,8 +1,8 @@
 #!/bin/bash
 #PBS -l nodes=1:ppn=2,mem=16gb
 
-# Usage: ./albacore_run.sh [-h] [-i INPUT_DIR] [-o OUTPUT_DIR] [-c CONFIG] /path/to/fast5
-# Subprogram usage: qsub -F "/absolute/path/to/fast5 raw albacore r94_450bps_linear.cfg" albacore.sh 
+# Usage: ./albacore_run.sh [-h] [-i INPUT_DIR] [-o OUTPUT_DIR] [-c CONFIG] [-5] [-q] /path/to/fast5
+# Subprogram usage: qsub -F "/absolute/path/to/fast5 raw albacore r94_450bps_linear.cfg fast5,fastq" albacore.sh 
 
 # Load anaconda3 module, where albacore is installed
 module load anaconda3
@@ -16,6 +16,7 @@ PARENT=$1
 RAW=$2
 READS=$3
 CONFIG=$4
+MODE=$4
 # Choose the nth subdirectory of /path/to/fast5/raw - n is specified in $PBS_ARRAYID
 SUBDIR=$(ls -1 $PARENT/$RAW | sed "${PBS_ARRAYID}q;d")
 # Set paths on wehisan
@@ -45,7 +46,7 @@ fi
 
 echo "[$(date +'%y-%m-%d %H:%M:%S')] Basecalling fast5 into $TMP_READS_DIR..."
 # This is it! Basecall the reads
-read_fast5_basecaller.py -o fast5,fastq -i $TMP_RAW_DIR -c $CONFIG -t $(($(nproc)-1)) -s $TMP_READS_DIR
+read_fast5_basecaller.py -o $MODE -i $TMP_RAW_DIR -c $CONFIG -t $(($(nproc)-1)) -s $TMP_READS_DIR
 
 # Count the number of basecalled reads - even reads without basecalls should have a file associated with them
 N_CALLED=$(find $TMP_READS_DIR/workspace -mindepth 2 -name "*.fast5" | wc -l)
