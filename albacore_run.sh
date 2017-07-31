@@ -20,7 +20,7 @@ fi
 # Set default arguments
 RAW="raw"
 READS="albacore"
-CONFIG="r94_450bps_linear.cfg"
+CONFIG="r95_450bps_linear.cfg"
 MODE="fast5"
 FAST5=false
 FASTQ=false
@@ -36,8 +36,8 @@ do
     i) RAW=${OPTARG};;
     o) READS=${OPTARG};;
     c) CONFIG=${OPTARG};;
-    5) FAST5=true
-    q) FASTQ=true
+    5) FAST5=true;;
+    q) FASTQ=true;;
     *) echo "$HELP" >&2; exit 1 # illegal option
     esac
 done
