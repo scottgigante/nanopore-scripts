@@ -1,12 +1,13 @@
 #!/bin/bash
 #PBS -q small
 
-# Usage: qsub -F "/path/to/genome.fasta /path/to/reads.fasta" nanopolish_methylation_run.sh
+# Usage: qsub -F "/path/to/genome.fasta /path/to/reads.fasta /path/to/variants.vcf" nanopolish_phase_reads_run.sh
 
 set -x
-GENOME=$PBS_O_WORKDIR/$1
-FASTA=$PBS_O_WORKDIR/$2
-VCF=$PBS_O_WORKDIR/$3
+cd $PBS_O_WORKDIR
+GENOME=$(realpath $1)
+FASTA=$(realpath $2)
+VCF=$(realpath $3)
 FMT=$(echo $FASTA | sed 's/.*\.//')
 N=10000
 TMP_DIR="$PBS_O_HOME/tmp/$(dirname $FASTA)"
