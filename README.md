@@ -66,3 +66,8 @@ Usage: `qsub -F "/path_to_genome.fasta /path/to/reads.fasta /path/to/variants.vc
 Extracts fasta and completes alignment using BWA MEM, optionally removing reads aligning to the calibration strand genome (provided).
 
 Usage: `qsub -F "/path/to/reads RUN_ID /path/to/genome [phage_reads_subdir]" extract_and_align.sh`
+
+## mask_genome_variants.py
+Replaces bases with ambiguity codes at SNP locations specified in a VCF file.
+
+Usage: python mask_genome_variants.py reference.fa reference.masked.fa variants.vcf
