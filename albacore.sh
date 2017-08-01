@@ -16,7 +16,7 @@ PARENT=$1
 RAW=$2
 READS=$3
 CONFIG=$4
-MODE=$4
+MODE=$5
 # Choose the nth subdirectory of /path/to/fast5/raw - n is specified in $PBS_ARRAYID
 SUBDIR=$(ls -1 $PARENT/$RAW | sed "${PBS_ARRAYID}q;d")
 # Set paths on wehisan
