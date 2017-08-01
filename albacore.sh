@@ -13,73 +13,80 @@ module load parallel
 set -x
 # Read command line args
 PARENT=$1
-RAW=$2
-READS=$3
+INPUT=$2
+OUTPUT=$3
 CONFIG=$4
 MODE=$5
 # Choose the nth subdirectory of /path/to/fast5/raw - n is specified in $PBS_ARRAYID
-SUBDIR=$(ls -1 $PARENT/$RAW | sed "${PBS_ARRAYID}q;d")
+SUBDIR=$(ls -1 $PARENT/$INPUT | sed "${PBS_ARRAYID}q;d")
 # Set paths on wehisan
-RAW_DIR="$PARENT/$RAW/$SUBDIR"
-READS_DIR="$PARENT/$READS/$SUBDIR"
+INPUT_DIR="$PARENT/$INPUT/$SUBDIR"
+OUTPUT_DIR="$PARENT/$OUTPUT/$SUBDIR"
 # Set paths on HPCScratch
-TMP_RAW_DIR="$PBS_O_HOME/tmp/$RAW_DIR"
-TMP_READS_DIR="$PBS_O_HOME/tmp/$READS_DIR"
+TMP_INPUT_DIR="$PBS_O_HOME/tmp/$INPUT_DIR"
+TMP_OUTPUT_DIR="$PBS_O_HOME/tmp/$OUTPUT_DIR"
 # Make directories if they do not exist
-mkdir -p $TMP_RAW_DIR
-mkdir -p $TMP_READS_DIR
-mkdir -p $READS_DIR
+mkdir -p $TMP_INPUT_DIR
+mkdir -p $TMP_OUTPUT_DIR
+mkdir -p $OUTPUT_DIR
 
 # Count the number of raw reads
-N_RAW=$(find $RAW_DIR -name "*.fast5" | wc -l)
-echo "[$(date +'%y-%m-%d %H:%M:%S')] Copying files from $RAW_DIR to $TMP_RAW_DIR..."
+N_INPUT=$(find $INPUT_DIR -name "*.fast5" | wc -l)
+echo "[$(date +'%y-%m-%d %H:%M:%S')] Copying files from $INPUT_DIR to $TMP_INPUT_DIR..."
 # Copy raw reads to tmp
-find $RAW_DIR -name "*.fast5" | parallel -X cp {} $TMP_RAW_DIR
+find $INPUT_DIR -name "*.fast5" | parallel -X cp {} $TMP_INPUT_DIR
 # Count the number of moved reads
-N_MOVED=$(find $TMP_RAW_DIR -name "*.fast5" | wc -l)
+N_MOVED=$(find $TMP_INPUT_DIR -name "*.fast5" | wc -l)
 # Check that all reads were moved
-if [ $N_MOVED -lt $N_RAW ]; then
+if [ $N_MOVED -lt $N_INPUT ]; then
   echo "[$(date +'%y-%m-%d %H:%M:%S')] ERROR: Copy to HPC failed."
-  echo "$RAW_DIR: $N_RAW"
-  echo "$TMP_RAW_DIR: $N_MOVED"
+  echo "$INPUT_DIR: $N_INPUT"
+  echo "$TMP_INPUT_DIR: $N_MOVED"
 fi
 
-echo "[$(date +'%y-%m-%d %H:%M:%S')] Basecalling fast5 into $TMP_READS_DIR..."
+echo "[$(date +'%y-%m-%d %H:%M:%S')] Basecalling fast5 into $TMP_OUTPUT_DIR..."
 # This is it! Basecall the reads
-read_fast5_basecaller.py -o $MODE -i $TMP_RAW_DIR -c $CONFIG -t $(($(nproc)-1)) -s $TMP_READS_DIR
+read_fast5_basecaller.py -o $MODE -i $TMP_INPUT_DIR -c $CONFIG -t $(($(nproc)-1)) -s $TMP_OUTPUT_DIR
 
 # Count the number of basecalled reads - even reads without basecalls should have a file associated with them
-N_CALLED=$(find $TMP_READS_DIR/workspace -mindepth 2 -name "*.fast5" | wc -l)
-N_FASTQ_CALLED=$(grep -c -e "^@" $TMP_READS_DIR/workspace/*.fastq)
+N_CALLED=$(find $TMP_OUTPUT_DIR/workspace -mindepth 2 -name "*.fast5" | wc -l)
+if [[ $MODE == *"fastq"* ]]; then
+  N_FASTQ_CALLED=$(grep -c -e "^@" $TMP_OUTPUT_DIR/workspace/*.fastq)
+else
+  N_FASTQ_CALLED=0
+fi
 # Check that all reads were basecalled
 if ([[ $MODE == *"fast5"* ]] && [ $N_CALLED -lt $N_MOVED ]) || ( [[ $MODE == *"fastq"* ]] && [ $N_FASTQ_CALLED -lt $N_MOVED ]); then
   echo "[$(date +'%y-%m-%d %H:%M:%S')] ERROR:Basecalling failed."
-  echo "$TMP_RAW_DIR: $N_MOVED"
-  echo "$TMP_READS_DIR/*.fast5: $N_CALLED"
-  echo "$TMP_READS_DIR/*.fastq: $N_FASTQ_CALLED"
+  echo "$TMP_INPUT_DIR: $N_MOVED"
+  echo "$TMP_OUTPUT_DIR/*.fast5: $N_CALLED"
+  echo "$TMP_OUTPUT_DIR/*.fastq: $N_FASTQ_CALLED"
 fi
 # Remove temporary raw files
-rm -rf $TMP_RAW_DIR
+rm -rf $TMP_INPUT_DIR
 
-
-echo "[$(date +'%y-%m-%d %H:%M:%S')] Copying files from $TMP_READS_DIR to $READS_DIR..."
+echo "[$(date +'%y-%m-%d %H:%M:%S')] Copying files from $TMP_OUTPUT_DIR to $OUTPUT_DIR..."
 # Copy basecalled reads to wehisan
-find $TMP_READS_DIR/workspace -mindepth 2 -name "*.fast5" | parallel -X cp {} $READS_DIR
-# Copy fastq to wehisan - in future, we may want to concatenate these in cleanup
-find $TMP_READS_DIR/workspace -name "*.fastq" -exec cat {} \; > ${READS_DIR}.fastq
+find $TMP_OUTPUT_DIR/workspace -mindepth 2 -name "*.fast5" | parallel -X cp {} $OUTPUT_DIR
 # Count the number of fast5 files moved
-N_MOVED=$(find $READS_DIR -name "*.fast5" | wc -l)
-N_FASTQ_MOVED=$(grep -c -e "^@" ${READS_DIR}.fastq)
+N_MOVED=$(find $OUTPUT_DIR -name "*.fast5" | wc -l)
+# Copy fastq to wehisan - in future, we may want to concatenate these in cleanup
+if [[ $MODE == *"fastq"* ]]; then
+  find $TMP_OUTPUT_DIR/workspace -name "*.fastq" -exec cat {} \; > ${OUTPUT_DIR}.fastq
+  N_FASTQ_MOVED=$(grep -c -e "^@" ${OUTPUT_DIR}.fastq)
+else
+  N_FASTQ_MOVED=0
+fi
 # Check if all basecalled files were moved
 if [ $N_MOVED -lt $N_CALLED ] || [ $N_FASTQ_MOVED -lt $N_FASTQ_CALLED ]; then
   echo "[$(date +'%y-%m-%d %H:%M:%S')] ERROR:Copy to wehisan failed."
-  echo "$TMP_READS_DIR/*.fast5: $N_CALLED"
-  echo "$READS_DIR/*.fast5: $N_MOVED"
-  echo "$TMP_READS_DIR/*.fastq: $N_FASTQ_CALLED"
-  echo "${READS_DIR}.fastq: $N_FASTQ_MOVED"
+  echo "$TMP_OUTPUT_DIR/*.fast5: $N_CALLED"
+  echo "$OUTPUT_DIR/*.fast5: $N_MOVED"
+  echo "$TMP_OUTPUT_DIR/*.fastq: $N_FASTQ_CALLED"
+  echo "${OUTPUT_DIR}.fastq: $N_FASTQ_MOVED"
 else
   # All good, we can remove the temporary basecalled files. If copying failed, user may want to retrieve them.
-  rm -rf $TMP_READS_DIR
+  rm -rf $TMP_OUTPUT_DIR
 fi
 echo "[$(date +'%y-%m-%d %H:%M:%S')] COMPLETE"
 
