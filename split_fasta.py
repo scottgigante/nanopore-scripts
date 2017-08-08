@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Usage: ./split_fasta.py /path/to/fasta.fa 2000
-# ./split_fasta.py /path/to/reads.fastq 100 fastq
+# ./split_fasta.py /path/to/reads.fastq 100
 from __future__ import print_function
 from Bio import SeqIO
 import sys
@@ -9,10 +9,13 @@ import os
 
 fasta = sys.argv[1]
 n = int(sys.argv[2])
-if len(sys.argv) > 3:
-    fmt = sys.argv[3]
-else:
+if fasta.endswith("a"):
     fmt = "fasta"
+elif fasta.endswith("q"):
+    fmt = "fastq"
+else:
+    print("ERROR: Failed to read file {}. (Is it a fasta / fastq?)".format(fasta), file=sys.stderr)
+    exit(1)
 out_fasta = os.path.join(os.getcwd(), os.path.basename(fasta))
 
 with open(fasta, 'r') as in_handle:
