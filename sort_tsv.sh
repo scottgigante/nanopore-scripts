@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Sort a tsv file without destroying headers
-# Assumes headers start with a hash and nothing else does
+# Assumes headers start with a hash
 # Usage: ./sort_tsv.sh infile.tsv <args for sort>
 # Help: `man sort`
 INFILE=$1
