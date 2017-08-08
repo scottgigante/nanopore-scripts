@@ -2,6 +2,12 @@
 #PBS -q small
 
 # Usage: qsub -F "/path/to/genome.fasta /path/to/reads.fasta /path/to/variants.vcf" nanopolish_phase_reads_run.sh
+#
+# NB: nanopolish relies on being able to access the fast5 files that created your fastq.
+# /path/to/reads.fasta (or fastq) must be generated using either `poretools` or `nanopolish extract`
+# The paths contained in the fasta header must be accessible (without symlinks!) from ~/tmp
+# This is done using `rsync -a /path/to/fast5 ~/tmp/path/to/fast5`
+# It is advised to call `nanopolish extract` with relative paths, not absolute paths, for this reason
 
 set -x
 cd $PBS_O_WORKDIR

@@ -53,12 +53,17 @@ Splits a folder with far too many files inside into subfolders of a fixed size. 
 Usage: `./split_large_folder.sh /path/to/folder 4000`
 
 ## nanopolish_methylation_run.sh (and nanopolish_methylation.sh, nanopolish_methylation_clean.sh)
+
 Splits a fasta file into small chunks to be called with `nanopolish call-methylation`. Requires dependencies to be active, currently only on TL3 (or nanopolish_methylation_clean.sh can be rerun after array completion.) 
+
+NB: nanopolish relies on being able to access the fast5 files that created your fastq. /path/to/reads.fasta (or fastq) must be generated using either `poretools` or `nanopolish extract`. The paths contained in the fasta header must be accessible (without symlinks!) from ~/tmp. This is done using `rsync -a /path/to/fast5 ~/tmp/path/to/fast5`. It is advised to call `nanopolish extract` with relative paths, not absolute paths, for this reason.
 
 Usage: `qsub -F "/path_to_genome.fasta /path/to/reads.fasta" nanopolish_methylation_run.sh`
 
 ## nanopolish_phase_reads_run.sh (and nanopolish_phase_reads.sh, nanopolish_phase_reads_clean.sh)
 Splits a fasta file into small chunks to be called with `nanopolish phase-reads`. Requires dependencies to be active, currently only on TL3 (or nanopolish_phase_reads_clean.sh can be rerun after array completion.)
+
+NB: nanopolish relies on being able to access the fast5 files that created your fastq. /path/to/reads.fasta (or fastq) must be generated using either `poretools` or `nanopolish extract`. The paths contained in the fasta header must be accessible (without symlinks!) from ~/tmp. This is done using `rsync -a /path/to/fast5 ~/tmp/path/to/fast5`. It is advised to call `nanopolish extract` with relative paths, not absolute paths, for this reason.
 
 Usage: `qsub -F "/path_to_genome.fasta /path/to/reads.fasta /path/to/variants.vcf" nanopolish_phase_reads_run.sh`
 
