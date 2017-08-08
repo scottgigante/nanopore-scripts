@@ -8,7 +8,14 @@ set -x
 GENOME=$1
 FASTA=$2
 TMP_DIR=$3
-FMT=$(echo $FASTA | sed 's/.*\.//')
+if [ $(echo $FASTA | grep -c -e "a$") -gt 0 ]; then
+  FMT="fasta"
+elif [ $(echo $FASTA | grep -c -e "q$") -gt 0 ]; then
+  FMT="fastq"
+else
+  echo "ERROR: $FASTA format not recognised"
+  exit 1
+fi
 
 INPUT_FASTA=$TMP_DIR/$(basename $FASTA).${PBS_ARRAYID}.$FMT
 

@@ -6,7 +6,14 @@ set -x
 FASTA=$1
 FASTA_DIR=$(dirname $FASTA)
 TMP_DIR=tmp/gmap/$FASTA_DIR
-FMT=$(echo $FASTA | sed 's/.*\.//')
+if [ $(echo $FASTA | grep -c -e "a$") -gt 0 ]; then
+  FMT="fasta"
+elif [ $(echo $FASTA | grep -c -e "q$") -gt 0 ]; then
+  FMT="fastq"
+else
+  echo "ERROR: $FASTA format not recognised"
+  exit 1
+fi
 
 find $TMP_DIR -name "gmap.${FMT}.*.bam" | {
   read firstbam
