@@ -51,9 +51,9 @@ def get_ambiguity_base(bases):
 
 def parse_args():
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-i', '--input', help='filename of input genome fasta')
-	parser.add_argument('-o', '--output', help='filename of output masked genome fasta')
-	parser.add_argument('-v', '--vcf', help='filename of vcf listing snps')
+	parser.add_argument('-i', '--input', required=True, help='filename of input genome fasta')
+	parser.add_argument('-o', '--output', required=True, help='filename of output masked genome fasta')
+	parser.add_argument('-v', '--vcf', required=True, help='filename of vcf listing snps')
 	parser.add_argument('--alternate-only', default=False, action='store_true', help='replace reference base with alternate allele, rather than retaining both (Default: false)')
 	return parser.parse_args()
 
