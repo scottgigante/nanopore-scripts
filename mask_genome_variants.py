@@ -4,6 +4,7 @@ from Bio import SeqIO
 from Bio import Seq
 import sys
 import csv
+import argparse
 
 def load_vcf(handle):
         header = next(handle)
@@ -48,21 +49,43 @@ def get_ambiguity_base(bases):
 	else:
 		raise Exception("Unrecognises bases: ['" + "','".join(list(bases)) + "']")
 
-in_fn = sys.argv[1]
-out_fn = sys.argv[2]
-vcf_fn = sys.argv[3]
+def parse_args():
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-i', '--input', help='filename of input genome fasta')
+	parser.add_argument('-o', '--output', help='filename of output masked genome fasta')
+	parser.add_argument('-v', '--vcf', help='filename of vcf listing snps')
+	parser.add_argument('--alternate-only', default=False, action='store_true', help='replace reference base with alternate allele, rather than retaining both (Default: false)')
+	return parser.parse_args()
+
+def contig_to_int(contig):
+	try:
+		return(int(contig))
+	except ValueError:
+		if contig == 'X':
+			return max_autosome + 1
+		elif contig == 'Y':
+			return max_autosome + 2
+		elif contig == 'MT':
+			return max_autosome + 3
+		else:
+			return max_autosome + 4
+def cmp_contigs(contig):
+	return(contig_to_int(contig), contig)
+
+args = parse_args()
 
 genome = dict()
-with open(in_fn, 'r') as handle:
+with open(args.input, 'r') as handle:
 	for record in SeqIO.parse(handle, "fasta"):
 		record.seq = record.seq.tomutable()
 		genome[record.id] = record
 
-with open(vcf_fn, 'r') as handle:
+with open(args.vcf, 'r') as handle:
 	vcf = load_vcf(handle)
 	for row in vcf:
-		bases = row['ALT'].split(',') + [row['REF']]
-		
+		bases = row['ALT'].split(',')
+		if not args.alternate_only:
+			bases = bases + [row['REF']]
 		snp = True
 		for base in bases:
 			if len(base) > 1:
@@ -85,22 +108,9 @@ for contig in genome.keys():
 			max_autosome = int(contig)
 	except ValueError:
 		pass
-def contig_to_int(contig):
-	try:
-		return(int(contig))
-	except ValueError:
-		if contig == 'X':
-			return max_autosome + 1
-		elif contig == 'Y':
-			return max_autosome + 2
-		elif contig == 'MT':
-			return max_autosome + 3
-		else:
-			return max_autosome + 4
-def cmp_contigs(contig):
-	return(contig_to_int(contig), contig)
+
 contigs = sorted(contigs, key=cmp_contigs)
 
-with open(out_fn, 'w') as handle:
+with open(args.output, 'w') as handle:
 	for contig in contigs:
 		SeqIO.write(genome[contig], handle, "fasta")
