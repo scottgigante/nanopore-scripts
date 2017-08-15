@@ -30,6 +30,10 @@ tail -n +2 ${FASTA}.methylation.tsv | awk '{ if (sqrt($5^2) > 2) { print; } }' |
 tail -n +2 ${FASTA}.methylation.tsv | awk '{ if ($5 > 0) { print $0 "\t+"; } else { print $0 "\t-"; } }' | cat $BINARY_HEADER - > ${FASTA}.methylation.with_binary.tsv &
 tail -n +2 ${FASTA}.methylation.filtered.tsv | awk '{ if ($5 > 0) { print $0 "\t+"; } else { print $0 "\t-"; } }' | cat $BINARY_HEADER - > ${FASTA}.methylation.filtered.with_binary.tsv &
 
+#merge the split bam files into one single bam
+samtools merge ${FASTA}.sorted.bam $TMP_DIR/$(basename $FASTA).*.${FMT}.sorted.bam || echo "ERROR: samtools merge failed"
+samtools index ${FASTA}.sorted.bam
+
 # summarise methylation at genomic locations
 python $NANOPOLISH_SCRIPTS/calculate_methylation_frequency.py -c 0 -i ${FASTA}.methylation.tsv > ${FASTA}.methylation.summary.tsv || echo "ERROR: nanopolish calculate_methylation_frequency.py failed. Check for memory failure" &
 python $NANOPOLISH_SCRIPTS/calculate_methylation_frequency.py -c 2 -i ${FASTA}.methylation.filtered.tsv > ${FASTA}.methylation.filtered.summary.tsv || echo "ERROR: nanopolish calculate_methylation_frequency.py failed. Check for memory failure" &
