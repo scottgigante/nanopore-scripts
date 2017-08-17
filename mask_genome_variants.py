@@ -14,40 +14,34 @@ def load_vcf(handle):
         reader = csv.DictReader(handle, delimiter="\t", fieldnames=header)
         return reader
 
+__ambiguity_codes = {
+	'N' : {'A', 'C', 'G', 'T'},
+	'V' : {'A', 'C', 'G'},
+	'H' : {'A', 'C', 'T'},
+	'D' : {'A', 'G', 'T'},
+	'B' : {'C', 'G', 'T'},
+	'M' : {'A', 'C'},
+	'K' : {'G', 'T'},
+	'R' : {'A', 'G'},
+	'Y' : {'C', 'T'},
+	'W' : {'A', 'T'},
+	'S' : {'C', 'G'},
+	'A' : {'A'},
+	'C' : {'C'},
+	'G' : {'G'},
+	'T' : {'T'}
+}
+
 def get_ambiguity_base(bases):
 	bases = set(bases)
-	if bases == {'A', 'C', 'G', 'T'}:
-		return 'N'
-	elif bases == {'A', 'C', 'G'}:
-		return 'V'
-	elif bases == {'A', 'C', 'T'}:
-		return 'H'
-	elif bases == {'A', 'G', 'T'}:
-		return 'D'
-	elif bases == {'C', 'G', 'T'}:
-		return 'B'
-	elif bases == {'A', 'C'}:
-		return 'M'
-	elif bases == {'G', 'T'}:
-		return 'K'
-	elif bases == {'A', 'G'}:
-		return 'R'
-	elif bases == {'C', 'T'}:
-		return 'Y'
-	elif bases == {'A', 'T'}:
-		return 'W'
-	elif bases == {'C', 'G'}:
-		return 'S'
-	elif bases == {'A'}:
-		return 'A'
-	elif bases == {'C'}:
-		return 'C'
-	elif bases == {'G'}:
-		return 'G'
-	elif bases == {'T'}:
-		return 'T'
-	else:
-		raise Exception("Unrecognises bases: ['" + "','".join(list(bases)) + "']")
+	for ambiguity_base, possible_bases in __ambiguity_codes.items():
+		if bases == possible_bases:
+			return ambiguity_base
+	raise Exception("Unrecognises bases: ['" + "','".join(list(bases)) + "']")
+
+def disambiguate_base(base):
+	base = str(base)
+	return list(__ambiguity_codes[base])
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -55,6 +49,7 @@ def parse_args():
 	parser.add_argument('-o', '--output', required=True, help='filename of output masked genome fasta')
 	parser.add_argument('-v', '--vcf', required=True, help='filename of vcf listing snps')
 	parser.add_argument('--alternate-only', default=False, action='store_true', help='replace reference base with alternate allele, rather than retaining both (Default: false)')
+	parser.add_argument('--update', default=False, action='store_true', help='Update an already masked genome with another VCF file (Default: false)')
 	return parser.parse_args()
 
 def contig_to_int(contig):
@@ -96,6 +91,8 @@ with open(args.vcf, 'r') as handle:
 		
 		pos = int(row['POS']) - 1
 		record = genome[row['CHROM']]
+		if args.update:
+			bases = bases + disambiguate_base(record.seq[pos])
 		record.seq[pos] = get_ambiguity_base(bases)
 		genome[row['CHROM']] = record
 
