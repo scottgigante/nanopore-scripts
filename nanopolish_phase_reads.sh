@@ -25,7 +25,7 @@ cd ~/tmp
 if [ ! -f ${INPUT_FASTA}.sorted.bam ]; then
   bwa mem -x ont2d $MASKED_GENOME $INPUT_FASTA | samtools sort -T ${INPUT_FASTA}.tmp -o ${INPUT_FASTA}.sorted.bam
 fi
-if [ ! ${INPUT_FASTA}.sorted.bam.bai ]; then
+if [ ! -f ${INPUT_FASTA}.sorted.bam.bai ]; then
   samtools index ${INPUT_FASTA}.sorted.bam || echo "ERROR: samtools index failed"
 fi
 nanopolish phase-reads -r $INPUT_FASTA -b ${INPUT_FASTA}.sorted.bam -g $UNMASKED_GENOME $VCF | samtools sort -T ${INPUT_FASTA}.tmp -o ${INPUT_FASTA}.phased.sorted.bam || echo "ERROR: nanopolish failed"
