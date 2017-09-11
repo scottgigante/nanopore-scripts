@@ -102,3 +102,6 @@ ENV/
 
 # mac backups
 ._*
+
+# windows
+desktop.ini
