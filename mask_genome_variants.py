@@ -2,6 +2,7 @@
 from __future__ import print_function
 from Bio import SeqIO
 from Bio import Seq
+import re
 import sys
 import csv
 import argparse
@@ -105,15 +106,23 @@ def cmp_contigs(contig):
 args = parse_args()
 regions = dict()
 # format: { chr : [start, end, alternate_only] }
-for region in args.region:
-    try:
-        regions[region[0]]
-    except KeyError:
-        regions[region[0]] = []
-    regions[region[0]].append([region[1]+args.boundary//2, region[2]-args.boundary//2, args.alternate_only])
-    if args.boundary > 1:
-        regions[region[0]].append([region[1]-args.boundary//2, region[1]+args.boundary//2, False])
-        regions[region[0]].append([region[2]-args.boundary//2, region[2]+args.boundary//2, False])
+if args.region:
+    for region in args.region:
+        try:
+            regions[region[0]]
+        except KeyError:
+            regions[region[0]] = []
+        region_start, region_end = region[1], region[2]
+        if region_start > 0:
+            region_start = region_start + args.boundary//2
+        if region_end is not None:
+            region_end = region_end - args.boundary//2
+        regions[region[0]].append([region_start, region_end, args.alternate_only])
+        if args.boundary > 1:
+            if region[1] > 0:
+                regions[region[0]].append([region[1]-args.boundary//2, region[1]+args.boundary//2, False])
+            if region[2] is not None:
+                regions[region[0]].append([region[2]-args.boundary//2, region[2]+args.boundary//2, False])
 
 genome = dict()
 with open(args.input, 'r') as handle:
@@ -125,7 +134,9 @@ with open(args.vcf, 'r') as handle:
     vcf = load_vcf(handle)
     for row in vcf:
         snp = True
-        for base in bases:
+	ref_base = [row['REF']]
+	alt_bases = row['ALT'].split(',')
+        for base in alt_bases + ref_base:
             if len(base) > 1:
                 snp = False
         if not snp:
@@ -147,12 +158,12 @@ with open(args.vcf, 'r') as handle:
         else:
             # genome wide
             alternate_only = args.alternate_only
-        bases = row['ALT'].split(',')
+        bases = alt_bases
         if not alternate_only:
             if args.update:
                 bases = bases + disambiguate_base(record.seq[pos])
             else:
-                bases = bases + [row['REF']]
+                bases = bases + ref_base
 
         record = genome[row['CHROM']]
         record.seq[pos] = get_ambiguity_base(bases)
