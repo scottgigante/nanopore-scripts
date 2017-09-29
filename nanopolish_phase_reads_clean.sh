@@ -14,6 +14,9 @@ else
   exit 1
 fi
 
+samtools merge ${FASTA}.sorted.bam $TMP_DIR/$(basename $FASTA).*.${FMT}.sorted.bam || echo "ERROR: samtools merge failed"
+samtools index ${FASTA}.sorted.bam
+
 samtools merge ${FASTA}.phased.sorted.bam $TMP_DIR/$(basename $FASTA).*.${FMT}.phased.sorted.bam || echo "ERROR: samtools merge failed"
 samtools index ${FASTA}.phased.sorted.bam
 
