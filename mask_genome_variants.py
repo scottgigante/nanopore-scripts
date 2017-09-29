@@ -158,6 +158,9 @@ with open(args.vcf, 'r') as handle:
         else:
             # genome wide
             alternate_only = args.alternate_only
+
+        record = genome[row['CHROM']]
+
         bases = alt_bases
         if not alternate_only:
             if args.update:
@@ -165,7 +168,6 @@ with open(args.vcf, 'r') as handle:
             else:
                 bases = bases + ref_base
 
-        record = genome[row['CHROM']]
         record.seq[pos] = get_ambiguity_base(bases)
         genome[row['CHROM']] = record
 
