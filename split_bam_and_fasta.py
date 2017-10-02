@@ -30,6 +30,7 @@ bam_suffix = args.bam_suffix if args.bam_suffix is not None else "bam"
 fasta_suffix = args.fasta_suffix if args.fasta_suffix is not None else fmt
 
 chunk_idx = dict()
+n_chunks = 1
 with open(fasta_fn, 'r') as fasta:
 	i = 0
 	out_fasta = open("{}.{}.{}".format(prefix, i // chunk_size, fasta_suffix), 'w')
@@ -40,10 +41,11 @@ with open(fasta_fn, 'r') as fasta:
 		if i % chunk_size == 0:
 			out_fasta.close()
 			out_fasta = open("{}.{}.{}".format(prefix, i // chunk_size, fasta_suffix), 'w')
+			n_chunks += 1
 	out_fasta.close()
 
 with pysam.AlignmentFile(bam_fn) as bam:
-	out_bams = [pysam.AlignmentFile("{}.{}.{}".format(prefix, j, bam_suffix), 'wb', template=bam) for j in range(i // chunk_size + 1)]
+	out_bams = [pysam.AlignmentFile("{}.{}.{}".format(prefix, j, bam_suffix), 'wb', template=bam) for j in range(n_chunks)]
 	for read in bam:
 		out_bams[chunk_idx[read.query_name]].write(read)
 	for out_bam in out_bams:
