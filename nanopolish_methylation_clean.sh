@@ -48,7 +48,7 @@ HEADER=$TMP_DIR/nanopolish.methylation.header.tsv
 head -n1 $TMP_DIR/$(basename $FASTA).1.${FMT}.methylation.tsv > $HEADER
 
 # concatenate files
-$SCRIPTS_DIR/merge_tsv.sh $TMP_DIR/$(basename $FASTA).*.${FMT}.methylation.tsv | tail -n +2 | sort -k1,1 -k2n,2n -k4,4 | cat $TMP_DIR/nanopolish.methylation.header.tsv - >${FASTA}.methylation.tsv &
+$SCRIPTS_DIR/merge_tsv.sh --skip 1 $TMP_DIR/$(basename $FASTA).*.${FMT}.methylation.tsv | tail -n +2 | sort -k1,1 -k2n,2n -k4,4 | cat $TMP_DIR/nanopolish.methylation.header.tsv - >${FASTA}.methylation.tsv &
 
 #merge the split bam files into one single bam
 samtools merge ${FASTA}.sorted.bam $TMP_DIR/$(basename $FASTA).*.${FMT}.sorted.bam || echo "ERROR: samtools merge failed"
