@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -q small
 
-# Usage: qsub -F "/path/to/masked_genome.fasta /path/to/unmasked_genome.fasta /path/to/reads.fasta /path/to/variants.vcf" nanopolish_phase_reads_run.sh
+# Usage: qsub -F "/path/to/masked_genome.fasta /path/to/unmasked_genome.fasta /path/to/reads.fasta /path/to/variants.vcf [/path/to/alignment.bam]" nanopolish_phase_reads_run.sh
 #
 # NB: nanopolish relies on being able to access the fast5 files that created your fastq.
 # /path/to/reads.fasta (or fastq) must be generated using either `poretools` or `nanopolish extract`
@@ -15,6 +15,10 @@ MASKED_GENOME=$(realpath $1)
 UNMASKED_GENOME=$(realpath $2)
 FASTA=$(realpath $3)
 VCF=$(realpath $4)
+if [ "$#" -gt 4 ]; then
+  BAM=$(realpath $5)
+fi
+
 if [ $(echo $FASTA | grep -c -e "a$") -gt 0 ]; then
   FMT="fasta"
 elif [ $(echo $FASTA | grep -c -e "q$") -gt 0 ]; then
@@ -30,8 +34,13 @@ SCRIPTS_DIR=$PBS_O_HOME/nanopore-scripts
 mkdir -p $TMP_DIR
 cd $TMP_DIR
 if [ ! -f $(basename $FASTA).1.$FMT ]; then
-  python $SCRIPTS_DIR/split_fasta.py $FASTA $N
+  if [ "$#" -gt 4 ]; then
+    python $SCRIPTS_DIR/split_bam_and_fasta.py -b $BAM -f $FASTA --prefix $(basename $FASTA) --bam-suffix fastq.sorted.bam -n $N
+  else
+    python $SCRIPTS_DIR/split_fasta.py $FASTA $N
+  fi
 fi
+
 ARRAY_ID=$(qsub -F "$MASKED_GENOME $UNMASKED_GENOME $FASTA $VCF $TMP_DIR" -t 1-$(ls -1 $TMP_DIR/$(basename $FASTA).*.$FMT | wc -l) $SCRIPTS_DIR/nanopolish_phase_reads.sh)
 qsub -W "depend=afteranyarray:$ARRAY_ID" -F "$MASKED_GENOME $UNMASKED_GENOME $FASTA $VCF $TMP_DIR" $SCRIPTS_DIR/nanopolish_phase_reads_clean.sh
 
