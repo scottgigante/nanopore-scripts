@@ -33,19 +33,19 @@ chunk_idx = dict()
 n_chunks = 1
 with open(fasta_fn, 'r') as fasta:
 	i = 0
-	out_fasta = open("{}.{}.{}".format(prefix, i // chunk_size, fasta_suffix), 'w')
+	out_fasta = open("{}.{}.{}".format(prefix, i // chunk_size + 1, fasta_suffix), 'w')
 	for read in SeqIO.parse(fasta, fmt):
 		chunk_idx[read.id] = i // chunk_size
 		SeqIO.write(read, out_fasta, fmt)
 		i += 1
 		if i % chunk_size == 0:
 			out_fasta.close()
-			out_fasta = open("{}.{}.{}".format(prefix, i // chunk_size, fasta_suffix), 'w')
+			out_fasta = open("{}.{}.{}".format(prefix, i // chunk_size + 1, fasta_suffix), 'w')
 			n_chunks += 1
 	out_fasta.close()
 
 with pysam.AlignmentFile(bam_fn) as bam:
-	out_bams = [pysam.AlignmentFile("{}.{}.{}".format(prefix, j, bam_suffix), 'wb', template=bam) for j in range(n_chunks)]
+	out_bams = [pysam.AlignmentFile("{}.{}.{}".format(prefix, j+1, bam_suffix), 'wb', template=bam) for j in range(n_chunks)]
 	for read in bam:
 		out_bams[chunk_idx[read.query_name]].write(read)
 	for out_bam in out_bams:

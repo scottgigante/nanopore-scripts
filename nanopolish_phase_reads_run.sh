@@ -33,5 +33,5 @@ if [ ! -f $(basename $FASTA).1.$FMT ]; then
   python $SCRIPTS_DIR/split_fasta.py $FASTA $N
 fi
 ARRAY_ID=$(qsub -F "$MASKED_GENOME $UNMASKED_GENOME $FASTA $VCF $TMP_DIR" -t 1-$(ls -1 $TMP_DIR/$(basename $FASTA).*.$FMT | wc -l) $SCRIPTS_DIR/nanopolish_phase_reads.sh)
-qsub -W "depend=afteranyarray:$ARRAY_ID" -F "$FASTA $TMP_DIR" $SCRIPTS_DIR/nanopolish_phase_reads_clean.sh
+qsub -W "depend=afteranyarray:$ARRAY_ID" -F "$MASKED_GENOME $UNMASKED_GENOME $FASTA $VCF $TMP_DIR" $SCRIPTS_DIR/nanopolish_phase_reads_clean.sh
 
