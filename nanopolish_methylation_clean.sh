@@ -20,10 +20,10 @@ SCRIPTS_DIR=$PBS_O_HOME/nanopore-scripts
 RERUN=false
 ERROR=true
 ARRAY=""
-for i in 1..$(ls -1 $TMP_DIR/${basename $FASTA}.*.${FMT} | wc -l}; do
+for i in $(eval echo "{1..$(ls -1 $TMP_DIR/${basename $FASTA}.*.${FMT} | wc -l)}"); do
   F="$TMP_DIR/${basename $FASTA}.${i}.${FMT}.methylation.tsv"
-  if [ ! -s $F || $(tail -c 1 $F) ]; then
-    if [ $RERUN ]; then
+  if [ ! -s $F ] || [ $(tail -c 1 $F) ]; then
+    if $RERUN; then
       ARRAY="${ARRAY},"
     else
       RERUN=true
@@ -34,10 +34,10 @@ for i in 1..$(ls -1 $TMP_DIR/${basename $FASTA}.*.${FMT} | wc -l}; do
     ERROR=false
   fi
 done
-if [ $ERROR ]; then
+if $ERROR; then
   echo "ERROR: No valid methylation data found."
   exit 1
-elif [ $RERUN ]; then
+elif $RERUN; then
   ARRAY_ID=$(qsub -F "$GENOME $FASTA $TMP_DIR" -t $ARRAY $SCRIPTS_DIR/nanopolish_methylation.sh)
   qsub -W "depend=afteranyarray:$ARRAY_ID" -F "$GENOME $FASTA $TMP_DIR" $SCRIPTS_DIR/nanopolish_methylation_clean.sh
   exit 0

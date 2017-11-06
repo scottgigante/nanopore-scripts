@@ -21,10 +21,10 @@ SCRIPTS_DIR=$PBS_O_HOME/nanopore-scripts
 RERUN=false
 ERROR=true
 ARRAY=""
-for i in 1..$(ls -1 $TMP_DIR/${basename $FASTA}.*.${FMT} | wc -l}; do
+for i in $(eval echo "{1..$(ls -1 $TMP_DIR/${basename $FASTA}.*.${FMT} | wc -l)}"); do
   F="$TMP_DIR/${basename $FASTA}.${i}.${FMT}.phased.sorted.bam"
-  if [ $(find $TMP_DIR -name "${basename $FASTA}.${i}.${FMT}.phased.sorted.bam" -size -4096c) || $(samtools view $F || echo "ERROR") ]; then
-    if [ $RERUN ]; then
+  if [ $(find $TMP_DIR -name "${basename $FASTA}.${i}.${FMT}.phased.sorted.bam" -size -4096c) $(samtools view $F || echo "ERROR") ]; then
+    if $RERUN; then
       ARRAY="${ARRAY},"
     else
       RERUN=true
@@ -35,10 +35,10 @@ for i in 1..$(ls -1 $TMP_DIR/${basename $FASTA}.*.${FMT} | wc -l}; do
     ERROR=false
   fi
 done
-if [ $ERROR ]; then
+if $ERROR; then
   echo "ERROR: No valid phasing data found."
   exit 1
-elif [ $RERUN ]; then
+elif $RERUN; then
   ARRAY_ID=$(qsub -F "$MASKED_GENOME $UNMASKED_GENOME $FASTA $VCF $TMP_DIR" -t $ARRAY $SCRIPTS_DIR/nanopolish_phase_reads.sh)
   qsub -W "depend=afteranyarray:$ARRAY_ID" -F "$MASKED_GENOME $UNMASKED_GENOME $FASTA $VCF $TMP_DIR" $SCRIPTS_DIR/nanopolish_phase_reads_clean.sh
   exit 0
