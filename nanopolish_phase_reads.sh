@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -l nodes=1:ppn=2,mem=16gb
 module load bwa
-module load nanopolish/0.7.1
+module load nanopolish
 module load samtools
 
 set -x
@@ -20,6 +20,12 @@ else
 fi
 
 INPUT_FASTA=$TMP_DIR/$(basename $FASTA).${PBS_ARRAYID}.$FMT
+if [ ! -f ${INPUT_FASTA}.fa.gz ]; then
+  cp ${FASTA}.fa.gz ${INPUT_FASTA}.fa.gz
+  cp ${FASTA}.fa.gz.fai ${INPUT_FASTA}.fa.gz.fai
+  cp ${FASTA}.fa.gz.gzi ${INPUT_FASTA}.fa.gz.gzi
+  cp ${FASTA}.fa.gz.readdb ${INPUT_FASTA}.fa.gz.readdb
+fi
 
 cd ~/tmp
 if [ ! -f ${INPUT_FASTA}.sorted.bam ]; then

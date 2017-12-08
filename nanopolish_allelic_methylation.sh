@@ -10,15 +10,15 @@
 # This is done using `rsync -a /path/to/fast5 ~/tmp/path/to/fast5`
 # It is advised to call `nanopolish extract` with relative paths, not absolute paths, for this reason
 
+module load nanopolish
 set -x
 cd $PBS_O_WORKDIR
 MASKED_GENOME=$(realpath $1)
 UNMASKED_GENOME=$(realpath $2)
 FASTA=$(realpath $3)
 VCF=$(realpath $4)
-if [ "$#" -gt 4 ]; then
-  BAM=$(realpath $5)
-fi
+BAM=$(realpath $5)
+FAST5_DIR=$(realpath $6)
 
 if [ $(echo $FASTA | grep -c -e "a$") -gt 0 ]; then
   FMT="fasta"
@@ -36,11 +36,16 @@ mkdir -p $TMP_DIR
 cd $TMP_DIR
 if [ ! -f $(basename $FASTA).1.$FMT ]; then
   if [ "$#" -gt 4 ]; then
-    python $SCRIPTS_DIR/split_bam_and_fasta.py -b $BAM -f $FASTA --prefix $(basename $FASTA) --bam-suffix fastq.sorted.bam -n $N
+    python $SCRIPTS_DIR/split_bam_and_fasta.py -b $BAM -f $FASTA --prefix $(basename $FASTA) --bam-suffix fastq.sorted.bam -n $N &
   else
-    python $SCRIPTS_DIR/split_fasta.py $FASTA $N
+    python $SCRIPTS_DIR/split_fasta.py $FASTA $N &
   fi
 fi
+
+if [ ! -f ${FASTA}.fa.gz ]; then
+  nanopolish index -d $FAST5_DIR $FASTA
+fi
+wait
 
 $SCRIPTS_DIR/nanopolish_methylation_run.sh $MASKED_GENOME $FASTA
 $SCRIPTS_DIR/nanopolish_phase_reads_run.sh $MASKED_GENOME $UNMASKED_GENOME $FASTA $VCF

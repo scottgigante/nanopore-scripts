@@ -21,15 +21,20 @@ SCRIPTS_DIR=$PBS_O_HOME/nanopore-scripts
 RERUN=false
 ERROR=true
 ARRAY=""
-for i in $(eval echo "{1..$(ls -1 $TMP_DIR/${basename $FASTA}.*.${FMT} | wc -l)}"); do
-  F="$TMP_DIR/${basename $FASTA}.${i}.${FMT}.phased.sorted.bam"
-  if [ $(find $TMP_DIR -name "${basename $FASTA}.${i}.${FMT}.phased.sorted.bam" -size -4096c) $(samtools view $F || echo "ERROR") ]; then
-    if $RERUN; then
-      ARRAY="${ARRAY},"
+for i in $(eval echo "{1..$(ls -1 $TMP_DIR/$(basename $FASTA).*.${FMT} | wc -l)}"); do
+  F="$TMP_DIR/$(basename $FASTA).${i}.${FMT}.phased.sorted.bam"
+  if [ $(find $TMP_DIR -name "$(basename $FASTA).${i}.${FMT}.phased.sorted.bam" -size -4096c) $(samtools view $F > /dev/null || echo "ERROR") ]; then
+    if [ ! -f ${F}.failed_once ]; then
+      if $RERUN; then
+        ARRAY="${ARRAY},"
+      else
+        RERUN=true
+      fi
+      ARRAY="${ARRAY}${i}"
+      touch ${F}.failed_once
     else
-      RERUN=true
+      echo "ERROR: ${F} failed multiple times"
     fi
-    ARRAY="${ARRAY}${i}"
     rm $F
   else
     ERROR=false
@@ -44,10 +49,10 @@ elif $RERUN; then
   exit 0
 fi
 
-samtools merge ${FASTA}.sorted.bam $TMP_DIR/$(basename $FASTA).*.${FMT}.sorted.bam || echo "ERROR: samtools merge failed"
+samtools merge -f ${FASTA}.sorted.bam $TMP_DIR/$(basename $FASTA).*.${FMT}.sorted.bam || echo "ERROR: samtools merge failed"
 samtools index ${FASTA}.sorted.bam
 
-samtools merge ${FASTA}.phased.sorted.bam $TMP_DIR/$(basename $FASTA).*.${FMT}.phased.sorted.bam || echo "ERROR: samtools merge failed"
+samtools merge -f ${FASTA}.phased.sorted.bam $TMP_DIR/$(basename $FASTA).*.${FMT}.phased.sorted.bam || echo "ERROR: samtools merge failed"
 samtools index ${FASTA}.phased.sorted.bam
 
 echo "COMPLETE"

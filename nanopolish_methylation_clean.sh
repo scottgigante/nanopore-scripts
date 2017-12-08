@@ -20,15 +20,20 @@ SCRIPTS_DIR=$PBS_O_HOME/nanopore-scripts
 RERUN=false
 ERROR=true
 ARRAY=""
-for i in $(eval echo "{1..$(ls -1 $TMP_DIR/${basename $FASTA}.*.${FMT} | wc -l)}"); do
-  F="$TMP_DIR/${basename $FASTA}.${i}.${FMT}.methylation.tsv"
+for i in $(eval echo "{1..$(ls -1 $TMP_DIR/$(basename $FASTA).*.${FMT} | wc -l)}"); do
+  F="$TMP_DIR/$(basename $FASTA).${i}.${FMT}.methylation.tsv"
   if [ ! -s $F ] || [ $(tail -c 1 $F) ]; then
-    if $RERUN; then
-      ARRAY="${ARRAY},"
+    if [ ! -f ${F}.failed_once ]; then
+      if $RERUN; then
+        ARRAY="${ARRAY},"
+      else
+        RERUN=true
+      fi
+      ARRAY="${ARRAY}${i}"
+      touch ${F}.failed_once
     else
-      RERUN=true
+      echo "ERROR: ${F} failed multiple times"
     fi
-    ARRAY="${ARRAY}${i}"
     rm $F
   else
     ERROR=false
@@ -51,7 +56,7 @@ head -n1 $TMP_DIR/$(basename $FASTA).1.${FMT}.methylation.tsv > $HEADER
 $SCRIPTS_DIR/merge_tsv.sh --skip 1 $TMP_DIR/$(basename $FASTA).*.${FMT}.methylation.tsv | tail -n +2 | sort -k1,1 -k2n,2n -k4,4 | cat $TMP_DIR/nanopolish.methylation.header.tsv - >${FASTA}.methylation.tsv &
 
 #merge the split bam files into one single bam
-samtools merge ${FASTA}.sorted.bam $TMP_DIR/$(basename $FASTA).*.${FMT}.sorted.bam || echo "ERROR: samtools merge failed"
+samtools merge -f ${FASTA}.sorted.bam $TMP_DIR/$(basename $FASTA).*.${FMT}.sorted.bam || echo "ERROR: samtools merge failed"
 samtools index ${FASTA}.sorted.bam
 
 
